@@ -154,7 +154,7 @@ $('#tester').keyup(function(e) {
     if (calculatedData[x] != null) {
       for (var i = 0; i < testerData[x].length; i++) {
         tested += 1;
-        if (calculatedData[x]['average'] - calculatedData[x]['stddev'] <= testerData[x][i] &&testerData[x][i] <= calculatedData[x]['average'] + calculatedData[x]['stddev']) {
+        if (calculatedData[x]['average'] - calculatedData[x]['stddev']*1.5 <= testerData[x][i] &&testerData[x][i] <= calculatedData[x]['average'] + calculatedData[x]['stddev']*1.5) {
           valid += 1;
         }
       }
