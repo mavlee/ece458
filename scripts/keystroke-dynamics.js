@@ -1,4 +1,5 @@
 data = {}
+calculatedData = {};
 cTime = null;
 cChar = null;
 pChar = null;
@@ -27,6 +28,13 @@ $('#reset').click(function() {
 });
 
 $('#p1,#p2,#p3,#p4,#p5').keydown(function(e) {
+  // ignore tabs
+  if (e.keyCode == 9) {
+    cChar = null;
+    pChar = null;
+    return;
+  }
+
   q = new Date();
   cTime = q.getTime();
   cChar = e.keyCode;
@@ -40,6 +48,13 @@ $('#p1,#p2,#p3,#p4,#p5').keydown(function(e) {
 });
 
 $('#p1,#p2,#p3,#p4,#p5').keyup(function(e) {
+  // ignore tabs
+  if (e.keyCode == 9) {
+    cChar = null;
+    pChar = null;
+    return;
+  }
+
   q = new Date();
   w = q.getTime();
   ch = convert(cChar);
@@ -49,4 +64,8 @@ $('#p1,#p2,#p3,#p4,#p5').keyup(function(e) {
   data[ch].push(w - cTime);
   pChar = cChar;
   pTime = w;
+});
+
+$('#calculate').click(function() {
+
 });
