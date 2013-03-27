@@ -22,29 +22,9 @@ $(document).ready(function() {
     console.log(data);
   });
 
-  $('#reset').click(function() {
-    data = {};
-    timingData = {};
-    cTime = null;
-    cChar = null;
-    pChar = null;
-    pTime = null;
-    $('#p1').val('');
-    $('#p2').val('');
-    $('#p3').val('');
-    $('#p4').val('');
-    $('#p5').val('');
-  });
-
-  $('#testerreset').click(function() {
-    testerData = {};
-    testerTimingData = {};
-    $('#tester').val('');
-  });
-
-  $('#p1,#p2,#p3,#p4,#p5').keydown(function(e) {
+  $('#p1').keydown(function(e) {
     // ignore tabs and shift keys
-    if (e.keyCode == 9 || e.keyCode == 16) {
+    if (e.keyCode == 9 || e.keyCode == 16 || e.keyCode == 13) {
       cChar = null;
       pChar = null;
       return;
@@ -66,7 +46,15 @@ $(document).ready(function() {
     //console.log(convert(cChar) + " key down time: " + cTime);
   });
 
-  $('#p1,#p2,#p3,#p4,#p5').keyup(function(e) {
+  $('#p1').keyup(function(e) {
+    // reset the input on enter key
+    if (e.keyCode == 13) {
+      calculate();
+      $(this).val('');
+      cChar = null;
+      pChar = null;
+      return;
+    }
     // ignore tabs and shift keys
     if (e.keyCode == 9 || e.keyCode == 16) {
       cChar = null;
@@ -84,7 +72,7 @@ $(document).ready(function() {
     //console.log(convert(e.keyCode) + " key up time: " + w);
   });
 
-  $('#calculate').click(function() {
+  var calculate = function() {
     for (x in data) {
       var values = data[x];
       calculatedData[x] = {};
@@ -105,11 +93,11 @@ $(document).ready(function() {
       calculatedData[x]['stddev'] = Math.sqrt(stdDevTotal / data[x].length);
     }
     console.log(calculatedData);
-  });
+  };
 
   $('#tester').keydown(function(e) {
-    // ignore tabs and shift keys
-    if (e.keyCode == 9 || e.keyCode == 16) {
+    // ignore tabs and shift and enter keys
+    if (e.keyCode == 9 || e.keyCode == 16 || e.keyCode == 13) {
       cChar = null;
       pChar = null;
       return;
@@ -132,6 +120,16 @@ $(document).ready(function() {
   });
 
   $('#tester').keyup(function(e) {
+    // reset stuff on enter key
+    if (e.keyCode == 13) {
+      testerData = {};
+      testerTimingData = {};
+      $('#tester').val('');
+      cChar = null;
+      pChar = null;
+      return;
+    }
+
     // ignore tabs and shift keys
     if (e.keyCode == 9 || e.keyCode == 16) {
       cChar = null;
