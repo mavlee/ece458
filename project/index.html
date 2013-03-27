@@ -5,19 +5,28 @@
     <script type="text/javascript" src="scripts/jquery-1.9.0.js"></script>
     <script type="text/javascript" src="scripts/keystroke-dynamics.js"></script>
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/keystroke.css" rel="stylesheet">
   </head>
   <body>
     <div class="container">
-    <h1>Keystroke Dynamics Test</h1>
-    <input type="text" id="p1" />
+      <div class="hero-unit">
+        <h2>Keystroke Dynamics Test</h2>
+        <p>Keystroke dynamics is a form of biometrics - using each person's body and habits as an authentication system or an extra layer of security. In this case, we use how a person types to determine if they are indeed the person who the password is meant for.</p>
+        <p>To try: enter in some text (press enter to enter it in again). We recommend entering in the text at least 10 times. After that, try typing the same text in the tester box, and see if you are verified. Allow someone else to try, and see if they are verified. <strong>Don't worry about making mistakes when typing</strong>, these will be taken into account.</p>
+        <p><strong>DON'T TYPE IN YOUR ACTUAL PASSWORD!</strong></p>
+      </div>
+      <div class="hero-unit">
+        <h4>Input Password</h4>
+        <input type="text" id="data-input" />
+        <span id="sample-count-display" class="display">0 samples</span>
+      </div>
 
-    <h3>Test Password</h3>
-    <input type="text" id="tester" />
-    <span id="validity">blahblah</span>
-
-    <br>
-    <input type="button" id="displayData" value="displayData" />
-
+      <div class="hero-unit">
+        <h4>Test Password</h4>
+        <input type="text" id="test-input" />
+        <span id="correctness-display" class="display"></span>
+        <span id="validity-display" class="display"></span>
+      </div>
     </div>
   </body>
 </html>

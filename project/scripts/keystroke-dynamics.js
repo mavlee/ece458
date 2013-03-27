@@ -8,8 +8,10 @@ $(document).ready(function() {
   pTime = null;
   testerData = {};
   testerTimingData = {};
+  testText = ''; // the text that should be typed in
+  numSamples = 0;
 
-  function convert(pChar) {
+  var convert = function(pChar) {
     charDisp = String.fromCharCode(pChar);
     if (pChar == 8)
       charDisp = "backspace";
@@ -18,11 +20,7 @@ $(document).ready(function() {
     return charDisp;
   }
 
-  $('#displayData').click(function() {
-    console.log(data);
-  });
-
-  $('#p1').keydown(function(e) {
+  $('#data-input').keydown(function(e) {
     // ignore tabs and shift keys
     if (e.keyCode == 9 || e.keyCode == 16 || e.keyCode == 13) {
       cChar = null;
@@ -46,9 +44,14 @@ $(document).ready(function() {
     //console.log(convert(cChar) + " key down time: " + cTime);
   });
 
-  $('#p1').keyup(function(e) {
+  $('#data-input').keyup(function(e) {
     // reset the input on enter key
     if (e.keyCode == 13) {
+      numSamples += 1;
+      $('#sample-count-display').html(numSamples + " samples");
+      if (testText == '') {
+        testText = $(this).val();
+      }
       calculate();
       $(this).val('');
       cChar = null;
@@ -95,7 +98,7 @@ $(document).ready(function() {
     console.log(calculatedData);
   };
 
-  $('#tester').keydown(function(e) {
+  $('#test-input').keydown(function(e) {
     // ignore tabs and shift and enter keys
     if (e.keyCode == 9 || e.keyCode == 16 || e.keyCode == 13) {
       cChar = null;
@@ -119,12 +122,12 @@ $(document).ready(function() {
     //console.log(convert(cChar) + " key down time: " + cTime);
   });
 
-  $('#tester').keyup(function(e) {
+  $('#test-input').keyup(function(e) {
     // reset stuff on enter key
     if (e.keyCode == 13) {
       testerData = {};
       testerTimingData = {};
-      $('#tester').val('');
+      $('#test-input').val('');
       cChar = null;
       pChar = null;
       return;
@@ -159,6 +162,16 @@ $(document).ready(function() {
         }
       }
     }
-    $('#validity').html(valid + " / " + tested);
+    $('#correctness-display').html(valid + " / " + tested);
+    if ($(this).val() != testText) {
+      $('#validity-display').css({"color": "red"});
+      $('#validity-display').html("WRONG PASSWORD");
+    } else if (valid / tested < 0.7) {
+      $('#validity-display').css({"color": "red"});
+      $('#validity-display').html("CORRECT PASSWORD, WRONG USER");
+    } else {
+      $('#validity-display').css({"color": "green"});
+      $('#validity-display').html("CORRECT PASSWORD AND USER");
+    }
   });
 });
