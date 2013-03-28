@@ -8,6 +8,9 @@ $(document).ready(function() {
   testText = ''; // the text that should be typed in
   numSamples = 0; // number of input samples there have been
 
+  // focus the first input
+  $('#data-input').focus();
+
   var convert = function(previousChar) {
     charDisp = String.fromCharCode(previousChar);
     if (previousChar == 8)
@@ -264,17 +267,21 @@ $(document).ready(function() {
         for (var i = 0; i < testerData[x].length; i++) {
           tested += 1;
           console.log("# of stddev away: " + Math.abs((testerData[x][i] - calculatedData[x]['average']) / calculatedData[x]['stddev']));
-          var zscore = Math.abs((testerData[x][i] - calculatedData[x]['average']) / calculatedData[x]['stddev']) * 0.75;
+          var zscore = Math.abs((testerData[x][i] - calculatedData[x]['average']) / calculatedData[x]['stddev']) * 0.65;
           var i1 = Math.floor(zscore * 10);
           var i2 = parseInt(zscore.toString()[3]) || 0;
           if (zscore <= 4.09) {
             console.log(ztable[i1][i2]);
-            total += 1 - ztable[i1][i2];
+            var v = 1 - 2*ztable[i1][i2];
+            if (zscore <= 0.5)
+              total += (1.5 - zscore) * v;
+            else
+              total += v;
           }
         }
       }
     }
-    var chance = total / tested * 100;
+    var chance = Math.min(100, total / tested * 100);
     $('#correctness-display').html(Math.round(chance*100)/100 + "%");
     if (chance < 70) {
       $('#validity-display').css({"color": "red"});
