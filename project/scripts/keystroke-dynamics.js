@@ -38,13 +38,13 @@ $(document).ready(function() {
       for (var i = 0; i < inputData[x].length; i++) {
         stdDevTotal += (inputData[x][i] - calculatedData[x]['average']) * (inputData[x][i] - calculatedData[x]['average']);
       }
-      calculatedData[x]['stddev'] = Math.sqrt(stdDevTotal / inputData[x].length);
+      calculatedData[x]['stddev'] = Math.sqrt(stdDevTotal / inputData[x].length) || 1;
     }
   };
 
   $('#data-input').keydown(function(e) {
     // ignore tabs and shift keys
-    if (e.keyCode == 9 || e.keyCode == 16 || e.keyCode == 13) {
+    if (e.keyCode == 9 || e.keyCode == 16 || e.keyCode == 13 || e.keyCode == 91) {
       currentChar = null;
       previousChar = null;
       previousKeydownChar = null;
@@ -83,6 +83,7 @@ $(document).ready(function() {
       $('#sample-count-display').html(numSamples + " samples");
       if (testText == '') {
         testText = $(this).val();
+        $('#password-display').html(testText);
       }
       calculate();
       $(this).val('');
@@ -92,7 +93,7 @@ $(document).ready(function() {
       return;
     }
     // ignore tabs and shift keys
-    if (e.keyCode == 9 || e.keyCode == 16) {
+    if (e.keyCode == 9 || e.keyCode == 16 || e.keyCode == 91) {
       currentChar = null;
       previousChar = null;
       previousKeydownChar = null;
@@ -111,7 +112,7 @@ $(document).ready(function() {
 
   $('#test-input').keydown(function(e) {
     // ignore tabs and shift and enter keys
-    if (e.keyCode == 9 || e.keyCode == 16 || e.keyCode == 13) {
+    if (e.keyCode == 9 || e.keyCode == 16 || e.keyCode == 13 || e.keyCode == 91) {
       currentChar = null;
       previousChar = null;
       previousKeydownChar = null;
@@ -158,7 +159,7 @@ $(document).ready(function() {
     }
 
     // ignore tabs and shift keys
-    if (e.keyCode == 9 || e.keyCode == 16) {
+    if (e.keyCode == 9 || e.keyCode == 16 || e.keyCode == 91) {
       currentChar = null;
       previousKeydownChar = null;
       previousChar = null;
@@ -183,7 +184,9 @@ $(document).ready(function() {
   });
 
   var checkCorrectness = function() {
-    checkCorrectnessStdDev();
+    //checkCorrectnessStdDev();
+    //checkCorrectnessStdDevWithScaling();
+    checkCorrectnessAvgStdDev();
     //checkCorrectnessManhattanDistance();
   };
 
@@ -267,21 +270,104 @@ $(document).ready(function() {
         for (var i = 0; i < testerData[x].length; i++) {
           tested += 1;
           console.log("# of stddev away: " + Math.abs((testerData[x][i] - calculatedData[x]['average']) / calculatedData[x]['stddev']));
-          var zscore = Math.abs((testerData[x][i] - calculatedData[x]['average']) / calculatedData[x]['stddev']) * 0.65;
+          var zscore = Math.abs((testerData[x][i] - calculatedData[x]['average']) / calculatedData[x]['stddev']);
           var i1 = Math.floor(zscore * 10);
           var i2 = parseInt(zscore.toString()[3]) || 0;
           if (zscore <= 4.09) {
             console.log(ztable[i1][i2]);
             var v = 1 - 2*ztable[i1][i2];
-            if (zscore <= 0.5)
-              total += (1.5 - zscore) * v;
-            else
-              total += v;
+            total += v;
           }
         }
       }
     }
     var chance = Math.min(100, total / tested * 100);
+    $('#correctness-display').html(Math.round(chance*100)/100 + "%");
+    if (chance < 70) {
+      $('#validity-display').css({"color": "red"});
+      $('#validity-display').html("CORRECT PASSWORD, WRONG USER");
+    } else {
+      $('#validity-display').css({"color": "green"});
+      $('#validity-display').html("CORRECT PASSWORD AND USER");
+    }
+  };
+
+  var checkCorrectnessStdDevWithScaling = function () {
+    // check how close you are
+    var tested = 0;
+    var total = 0;
+    var totalz = 0;
+    for (x in testerData) {
+      if (calculatedData[x] != null) {
+        for (var i = 0; i < testerData[x].length; i++) {
+          tested += 1;
+          console.log("# of stddev away: " + (testerData[x][i] - calculatedData[x]['average']) / calculatedData[x]['stddev']);
+          totalz += (testerData[x][i] - calculatedData[x]['average']) / calculatedData[x]['stddev'];
+          var zscore = Math.abs((testerData[x][i] - calculatedData[x]['average']) / calculatedData[x]['stddev']);
+          var i1 = Math.floor(zscore * 10);
+          var i2 = parseInt(zscore.toString()[3]) || 0;
+          if (zscore <= 3.5) {
+            var v = 1 - 1*ztable[i1][i2];
+            if (zscore <= 0.5)
+              total += (2) * v;
+            else
+              total += v;
+          } else {
+            total -= 1;
+          }
+        }
+      }
+    }
+    console.log("totalz: " + totalz);
+    var chance = Math.max(0, Math.min(100, total / tested * 100));
+    $('#correctness-display').html(Math.round(chance*100)/100 + "%");
+    if (chance < 70) {
+      $('#validity-display').css({"color": "red"});
+      $('#validity-display').html("CORRECT PASSWORD, WRONG USER");
+    } else {
+      $('#validity-display').css({"color": "green"});
+      $('#validity-display').html("CORRECT PASSWORD AND USER");
+    }
+  };
+
+  var checkCorrectnessAvgStdDev = function () {
+    // check how close you are
+    var tested = 0;
+    var totalabsz = 0;
+    var totalz = 0;
+    for (x in testerData) {
+      if (calculatedData[x] != null) {
+        for (var i = 0; i < testerData[x].length; i++) {
+          tested += 1;
+          //console.log("# of stddev away: " + (testerData[x][i] - calculatedData[x]['average']) / calculatedData[x]['stddev']);
+          totalz += 1 * ((testerData[x][i] - calculatedData[x]['average']) / calculatedData[x]['stddev']);
+          totalabsz += 1 * Math.abs((testerData[x][i] - calculatedData[x]['average']) / calculatedData[x]['stddev']);
+        }
+      }
+    }
+    //var zscore = Math.abs(totalz / tested);
+    var zscore = Math.abs(totalz * 2 / tested);
+    var i1 = Math.floor(zscore * 10);
+    var i2 = parseInt(zscore.toString()[3]) || 0;
+    console.log("totalz: " + totalz);
+    console.log("totalz: " + totalabsz);
+    console.log("avg zscore: " + zscore);
+    console.log("avg abszscore: " + (totalabsz / tested));
+    if (zscore <= 4.09) {
+      var chance = (1 - ztable[i1][i2])*100;
+    } else {
+      var chance = 0;
+    }
+    /*
+    zscore = Math.abs(totalabsz / tested);
+    i1 = Math.floor(zscore * 10);
+    i2 = parseInt(zscore.toString()[3]) || 0;
+    if (zscore <= 4.09) {
+      chance += (1 - ztable[i1][i2])*30;
+    } else {
+      chance += 0;
+    }
+    */
     $('#correctness-display').html(Math.round(chance*100)/100 + "%");
     if (chance < 70) {
       $('#validity-display').css({"color": "red"});
