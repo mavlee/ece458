@@ -20,27 +20,30 @@ $(document).ready(function() {
     return charDisp;
   }
 
-  var calculate = function() {
-    for (x in inputData) {
-      var values = inputData[x];
-      calculatedData[x] = {};
-      var total = 0;
-
-      // get average
-      for (var i = 0; i < inputData[x].length; i++) {
-        total += inputData[x][i];
+  $('#reset').click(function() {
+    $.ajax({
+      type: "POST",
+      url: "/reset",
+      data: testerData,
+      success: function(a,b,c) {
+        if (a == 'success') {
+          inputData = {}
+          inputTimingData = {};
+          testerData = {};
+          testerTimingData = {};
+          calculatedData = {}; // contains all of the data for averages and stddev
+          currentTime = currentChar =  previousChar = previousTime = previousKeydownChar = previousKeydownTime = null;
+          testText = ''; // the text that should be typed in
+          numSamples = 0; // number of input samples there have been
+          $('#sample-count-display').html(numSamples + " samples");
+          $('#password-display').html(testText);
+          $('#validity-display').html('');
+          $('#correctness-display').html('');
+        }
       }
-      calculatedData[x]['average'] = total / inputData[x].length;
-      calculatedData[x]['datapoints'] = inputData[x].length;
-
-      // get std dev
-      var stdDevTotal = 0;
-      for (var i = 0; i < inputData[x].length; i++) {
-        stdDevTotal += (inputData[x][i] - calculatedData[x]['average']) * (inputData[x][i] - calculatedData[x]['average']);
-      }
-      calculatedData[x]['stddev'] = Math.sqrt(stdDevTotal / inputData[x].length) || 1;
-    }
-  };
+    });
+  });
+  $('#reset').click();
 
   $('#data-input').keydown(function(e) {
     // ignore tabs and shift keys
@@ -78,18 +81,25 @@ $(document).ready(function() {
 
   $('#data-input').keyup(function(e) {
     // reset the input on enter key
+    var item = $(this);
     if (e.keyCode == 13) {
-      numSamples += 1;
-      $('#sample-count-display').html(numSamples + " samples");
-      if (testText == '') {
-        testText = $(this).val();
-        $('#password-display').html(testText);
-      }
-      calculate();
-      $(this).val('');
-      currentChar = null;
-      previousChar = null;
-      previousKeydownChar = null;
+      $.ajax({
+        type: "POST",
+        url: "/senddata",
+        data: {'data': inputData, 'pw': item.val()},
+        success: function(a,b,c) {
+          numSamples += 1;
+          $('#sample-count-display').html(numSamples + " samples");
+          if (testText == '') {
+            testText = item.val();
+            $('#password-display').html(testText);
+          }
+          item.val('');
+          currentTime = currentChar =  previousChar = previousTime = previousKeydownChar = previousKeydownTime = null;
+          inputData = {};
+          inputTimingData = {};
+        }
+      });
       return;
     }
     // ignore tabs and shift keys
@@ -145,16 +155,35 @@ $(document).ready(function() {
   });
 
   $('#test-input').keyup(function(e) {
+    var item = $(this);
     // reset stuff on enter key
     if (e.keyCode == 13) {
-      testerData = {};
-      testerTimingData = {};
-      $('#test-input').val('');
-      $('#correctness-display').html('');
-      $('#validity-display').html('');
-      currentChar = null;
-      previousChar = null;
-      previousKeydownChar = null;
+      $.ajax({
+        type: "POST",
+        url: "/checkpassword",
+        data: {'data': testerData, 'pw': item.val()},
+        success: function(a,b,c) {
+          testerData = {};
+          testerTimingData = {};
+          $('#test-input').val('');
+          $('#correctness-display').html('');
+          $('#validity-display').html('');
+          currentTime = currentChar =  previousChar = previousTime = previousKeydownChar = previousKeydownTime = null;
+          $('#correctness-display').html(a['percentage'] + "%");
+          if (a['type'] == 0) {
+            $('#validity-display').css({"color": "red"});
+            $('#validity-display').html("WRONG PASSWORD");
+          } else {
+            if (a['percentage'] < 75) {
+              $('#validity-display').css({"color": "red"});
+              $('#validity-display').html("CORRECT PASSWORD, WRONG USER");
+            } else {
+              $('#validity-display').css({"color": "green"});
+              $('#validity-display').html("CORRECT PASSWORD AND USER");
+            }
+          }
+        }
+      });
       return;
     }
 
@@ -173,16 +202,10 @@ $(document).ready(function() {
       testerData[ch] = [];
     }
     testerData[ch].push(w - testerTimingData[ch]);
-    //console.log(convert(e.keyCode) + " key up time: " + w);
-
-    if ($(this).val() != testText) {
-      $('#validity-display').css({"color": "red"});
-      $('#validity-display').html("WRONG PASSWORD");
-    } else {
-      checkCorrectness();
-    }
   });
 
+
+  /*
   var checkCorrectness = function() {
     //checkCorrectnessStdDev();
     //checkCorrectnessStdDevWithScaling();
@@ -358,7 +381,6 @@ $(document).ready(function() {
     } else {
       var chance = 0;
     }
-    /*
     zscore = Math.abs(totalabsz / tested);
     i1 = Math.floor(zscore * 10);
     i2 = parseInt(zscore.toString()[3]) || 0;
@@ -367,7 +389,6 @@ $(document).ready(function() {
     } else {
       chance += 0;
     }
-    */
     $('#correctness-display').html(Math.round(chance*100)/100 + "%");
     if (chance < 70) {
       $('#validity-display').css({"color": "red"});
@@ -377,4 +398,5 @@ $(document).ready(function() {
       $('#validity-display').html("CORRECT PASSWORD AND USER");
     }
   };
+*/
 });
